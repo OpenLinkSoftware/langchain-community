@@ -24,7 +24,7 @@ from langchain_community.graphs.rdf_graph import RdfGraph
 import re 
 def strip_sparql_markers_regex(s: str) -> str:
     # ^```sparql plus any whitespace/newlines at start
-    s = re.sub(r"^```sparql[\r\n\s]*", "", s)
+    s = re.sub(r"^```(?:sparql)?[\r\n\s]*", "", s)
     # any whitespace/newlines plus ``` at end
     s = re.sub(r"[\r\n\s]*```$", "", s)
     return s
