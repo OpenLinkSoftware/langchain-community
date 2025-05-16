@@ -21,6 +21,13 @@ from langchain_community.chains.graph_qa.prompts import (
 )
 from langchain_community.graphs.rdf_graph import RdfGraph
 
+import re 
+def strip_sparql_markers_regex(s: str) -> str:
+    # ^```sparql plus any whitespace/newlines at start
+    s = re.sub(r"^```sparql[\r\n\s]*", "", s)
+    # any whitespace/newlines plus ``` at end
+    s = re.sub(r"[\r\n\s]*```$", "", s)
+    return s
 
 class GraphSparqlQAChain(Chain):
     """Question-answering against an RDF or OWL graph by generating SPARQL statements.
@@ -161,7 +168,7 @@ class GraphSparqlQAChain(Chain):
         )
 
         if intent == "SELECT":
-            context = self.graph.query(generated_sparql)
+            context = self.graph.query(strip_sparql_markers_regex(generated_sparql))
 
             _run_manager.on_text("Full Context:", end="\n", verbose=self.verbose)
             _run_manager.on_text(
@@ -173,7 +180,7 @@ class GraphSparqlQAChain(Chain):
             )
             res = result[self.qa_chain.output_key]
         elif intent == "UPDATE":
-            self.graph.update(generated_sparql)
+            self.graph.update(strip_sparql_markers_regex(generated_sparql))
             res = "Successfully inserted triples into the graph."
         else:
             raise ValueError("Unsupported SPARQL query type.")
